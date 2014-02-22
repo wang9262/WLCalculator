@@ -16,11 +16,11 @@
     NSString *_lastAnswer;
     NSString *_passString;
     //计算次数标识符
-    int countFlat;
+    int countFlag;
 }
 
-- (void)clearAll;                                   // 清屏，以及清楚answer history
-- (void)deleteBack;									// DEL,回退
+//- (void)clearAll;                                   // 清屏，以及清楚answer history
+//- (void)deleteBack;									// DEL,回退
 
 
 @end
@@ -71,7 +71,7 @@
         case kMod:
         {
             //若为第一次运算
-            if (countFlat == 0) {
+            if (countFlag== 0) {
                 if (tag == kRadical) {
                     //若为根号,则将按钮的ⁿ√x显示成√，主要是为了显示效果
                     _resultText.text = [_tempStr stringByAppendingString:@"√"];
@@ -102,7 +102,6 @@
                 }
             }
             _tempStr = _resultText.text;
-            
         }
             break;
         case kClear:
@@ -117,7 +116,7 @@
                 _passString = [self replaceInputStrWithPassStr:_tempStr];
                 _totalResultLabel.text = [_tempStr stringByAppendingString:sender.titleLabel.text];
                 _lastAnswer = [_resultArray lastObject];
-                if ([_lastAnswer isEqualToString:@"error"]||countFlat == 0 ||[_lastAnswer isEqualToString:@""]) {
+                if ([_lastAnswer isEqualToString:@"error"]||countFlag == 0 ||[_lastAnswer isEqualToString:@""]) {
                     _tempStr = [_calcultor calculatingWithString:_passString andAnswerString:@"0"];
                 }else{
                     _tempStr = [_calcultor calculatingWithString:_passString andAnswerString:_lastAnswer];
@@ -131,7 +130,7 @@
                 //每一次求完之后，将_temp清空
                 _tempStr = [NSString string];
                 //执行过一次计算后，使flag置1
-                countFlat = 1;
+                countFlag = 1;
             }
             
         }
@@ -216,7 +215,7 @@
     [self removeHistoryView];
 }
 
-#pragma - mark Ultity Methods
+#pragma - mark Utility Methods
 - (NSString *)replaceInputStrWithPassStr:(NSString *)inputStr{
     NSString *tempString = inputStr;
     //将字符串长度大于1的运算符换成单字符，以便后面的操作
@@ -235,7 +234,7 @@
     if (!([tempString rangeOfString:@"ln"].location == NSNotFound)) {
         tempString = [tempString stringByReplacingOccurrencesOfString:@"ln" withString:@"e"];
     }
-    //替换根号符，由于除号编码超过了unichar，所以换成字母
+    //替换根号符，由于根号符编码超过了unichar，所以换成字母
     if (!([tempString rangeOfString:@"√"].location == NSNotFound)) {
         tempString = [tempString stringByReplacingOccurrencesOfString:@"√" withString:@"g"];
     }
@@ -247,8 +246,9 @@
     if (!([tempString rangeOfString:@"Ans"].location == NSNotFound)) {
         if ([_lastAnswer isEqualToString:@"error"]||[_lastAnswer isEqualToString:@""]) {
             tempString = [tempString stringByReplacingOccurrencesOfString:@"Ans" withString:@"0"];
-        }else
+        } else {
         tempString = [tempString stringByReplacingOccurrencesOfString:@"Ans" withString:[NSString stringWithFormat:@"%g",[_lastAnswer doubleValue]]];
+        }
     }
     return tempString;
 }
@@ -257,10 +257,10 @@
 {
 	_resultText.text = @"";
 	_totalResultLabel.text = @"";
-    _resultArray = nil;
+    _resultArray = [NSMutableArray array];      //用nil则在clearAll一次之后无法在使用历史记录功能，可能内存管理方面的缘故？不是很明白
     _tempStr = @"";
     _passString = @"";
-    countFlat = 0;
+    countFlag = 0;
     _lastAnswer = @"";
 }
 
