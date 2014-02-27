@@ -12,8 +12,8 @@
 
     @property (nonatomic,strong)NSMutableArray        *dealedArray;     //存储经过处理的表达式
     @property (nonatomic,strong)NSDictionary          *opPriority;      //运算符优先级表
-    @property (nonatomic,strong)NSMutableArray        *brakectHandledArray;
-    @property BOOL brakectAfterSingle;
+    @property (nonatomic,strong)NSMutableArray        *bracketHandledArray;
+    @property BOOL bracketAfterSingle;
 @end
 
 @implementation CalculatorDetails
@@ -23,17 +23,17 @@
     
     if (self =  [super  init]){
         //运算符优先级表；0优先级最大，向后优先级越小
-        _opPriority=@{@"(":@0, @"^":@1,@"√":@2,@"%":@2, @"x":@3,@"/":@3, @"+":@4, @"-":@4,@")":@5,  @"#": @6 };
+        _opPriority=@{@"(":@0, @"^":@1,@"√":@2,@"%":@2, @"x":@3,@"/":@3, @"+":@4, @"-":@4,@")":@5,@"#":@6};
     }
-    _brakectAfterSingle = NO;
+    _bracketAfterSingle = NO;
     return  self;
 }
 
 -(NSString*)calculatingWithString:(NSString *)str andAnswerString:(NSString *)answerString
 {
     //判断单目运算是否有括号，若有则将单目运算之前的处理过的字符存至_brakectHandledArray中。
-    if (_brakectAfterSingle) {
-        _brakectHandledArray = [NSMutableArray arrayWithArray:_dealedArray];
+    if (_bracketAfterSingle) {
+        _bracketHandledArray = [NSMutableArray arrayWithArray:_dealedArray];
     }
     
     //将表达式从字符串变成数组
@@ -57,7 +57,7 @@
         if ([str1    isEqualToString:@"#"]) {
             finalResult = [_dealedArray   objectAtIndex:1];
             if ([_dealedArray   count]>3) {
-                finalResult =@"error";
+                finalResult =@"error";                          //【三角函数嵌套显示的“error”来自这里】
             }
             return finalResult;
         }
@@ -88,7 +88,7 @@
                         return  finalResult;
                     }
                     //将返回结果代替表达式，包括括号一起代替
-                    range =NSMakeRange(i,j - i +1);
+                    range = NSMakeRange(i,j - i +1);
                     [_dealedArray    replaceObjectsInRange:range
                                     withObjectsFromArray: [NSArray arrayWithObject:subResult]];
                     //代替之后，重新获取新表达式的count
@@ -192,8 +192,8 @@
                        tempStr = [tempStr stringByAppendingString:[NSString stringWithFormat:@"%c",tempx]];
                     }else if (tempx == '('){
                         //如果单目运算后面有括号，则先算出括号内的值然后再单目运算
-                        _brakectAfterSingle = YES;
-                        NSString *string = [inputStr substringFromIndex:j];
+                        _bracketAfterSingle = YES;
+                        NSString *string = [inputStr substringFromIndex:j + 1];
                         for (int k = j+1; k < length; k++) {
                             
                             if ([string rangeOfString:@")"].location) {
@@ -204,18 +204,18 @@
                                 break;
                             }
                         }
-                        tempStr = [self calculatingWithString:string andAnswerString:answerString];
+                        tempStr = [self calculatingWithString:single andAnswerString:answerString];
                         //计算完单目运算后面括号中的值之后，将原来处理括号之前的已处理字符存入_dealedArray
-                        _dealedArray = [NSMutableArray arrayWithArray:_brakectHandledArray];
+                        _dealedArray = [NSMutableArray arrayWithArray:_bracketHandledArray];
                         break;
                     }
                     else
                         break;
                 }
                 if (tempStr.length >0 &&![tempStr isEqualToString:@"error"]) {
-                    if (_brakectAfterSingle) {
+                    if (_bracketAfterSingle) {
                         i += single.length + 1;
-                        _brakectAfterSingle = NO;
+                        _bracketAfterSingle = NO;
                     }else{
                         i = i + (int)[tempStr length] + 1;
                     }
@@ -256,7 +256,6 @@
     //存完表达式之后，整个表达式用一对()括起来，为了方便处理
     [_dealedArray   insertObject:@"("atIndex:0];
     [_dealedArray   addObject:@")"];
-    
 }
 
 //双目运算，父（子）级运算,即去除括号的
@@ -285,7 +284,7 @@
             }
             aresult = pow(x2, 1/x1);
             break;
-            //出发
+            //除法
         case 'd':
             if (x2 ==0){
                 string =@"error";

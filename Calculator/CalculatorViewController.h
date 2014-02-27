@@ -37,6 +37,10 @@
 - (IBAction)showAnswerHistory:(UIButton *)sender;
 - (IBAction)appendAnswer:(UIButton *)sender;
 
+//方法原型放在这里不容易报错
+- (void)clearAll;                                   // 清屏，以及清楚answer history
+- (void)deleteBack;									// DEL,回退
+
 
 
 @end
